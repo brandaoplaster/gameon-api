@@ -1,0 +1,2 @@
+class SystemRequirement < ApplicationRecord
+end
