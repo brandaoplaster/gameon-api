@@ -23,7 +23,7 @@ ActiveRecord::Schema.define(version: 2020_11_14_030316) do
 
   create_table "system_requirements", force: :cascade do |t|
     t.string "name"
-    t.string "operation_system"
+    t.string "operational_system"
     t.string "storage"
     t.string "processor"
     t.string "memory"

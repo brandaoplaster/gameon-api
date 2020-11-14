@@ -1,10 +1,10 @@
 FactoryBot.define do
   factory :system_requirement do
-    name { "MyString" }
-    operation_system { "MyString" }
-    storage { "MyString" }
-    processor { "MyString" }
-    memory { "MyString" }
-    video_board { "MyString" }
+    sequence(:name) { |n| "Basic #{n}" }
+    operation_system { Faker::Computer.os }
+    storage { "500GB" }
+    processor { "INTEL i7" }
+    memory { "8GB" }
+    video_board { "N/A" }
   end
 end
