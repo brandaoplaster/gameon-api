@@ -66,7 +66,7 @@ RSpec.describe "Admin V1 Categories", type: :request do
   end
 
   context "PATCH /categories/:id" do
-    let(:category) { cretae(:category) }
+    let(:category) { create(:category) }
     let(:url) { "/admin/v1/categories/#{category.id}" }
 
     context "with valid params" do
@@ -87,7 +87,7 @@ RSpec.describe "Admin V1 Categories", type: :request do
       end
 
       it "returns success status" do
-        post url, headers: auth_header(user), params: category_params
+        patch url, headers: auth_header(user), params: category_params
         expect(response).to have_http_status(:ok)
       end
     end
@@ -95,6 +95,23 @@ RSpec.describe "Admin V1 Categories", type: :request do
     context "with invalid params" do
       let(:category_invalid_params) do 
         { category: attributes_for(:category, name: nil) }.to_json
+      end
+
+      it "does not update Category" do
+        old_name = category.name
+        patch url, headers: auth_header(user), params: category_invalid_params
+        category.reload
+        expect(category.name).to eq old_name
+      end
+
+      it "returns error message" do
+        patch url, headers: auth_header(user), params: category_invalid_params
+        expect(body_json['errors']['fields']).to have_key('name')
+      end
+
+      it "returns unprocessable_entity status" do
+        patch url, headers: auth_header(user), params: category_invalid_params
+        expect(response).to have_http_status(:unprocessable_entity)
       end
     end
   end
