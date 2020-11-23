@@ -14,4 +14,6 @@ RSpec.describe Product, type: :model do
   it { is_expected.to have_many(:categories).through(:product_categories) }
 
   it { is_expected.to validate_presence_of(:image) }
+
+  it_behaves_like "name searchable concern", :product
 end
