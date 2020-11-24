@@ -1,4 +1,6 @@
 class Coupon < ApplicationRecord
+  include NameSearchable
+
   validates :name, presence: true
   validates :code, presence: true, uniqueness: { case_sensitive: false }
   validates :status, presence: true
