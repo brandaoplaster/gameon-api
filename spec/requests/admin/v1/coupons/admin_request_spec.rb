@@ -66,7 +66,54 @@ RSpec.describe "Admin V1 Coupons as :admin", type: :request do
   end
 
   context "PATCH /coupons/:id" do
+    let(:coupon) { create(:coupon) }
+    let(:url) { "/admin/v1/coupons/#{coupon.id}" }
+
+    context "with valid params" do
+      let(:new_coupon) { 'new_coupon' }
+      let(:coupon_params) { { coupon: { name: new_coupon } }.to_json }
     
+      it "updated coupon" do
+        patch url, headers: auth_header(user), params: coupon_params
+        coupon.reload
+        expect(coupon.name).to eq(new_coupon)
+      end
+
+      it "returns updated coupon" do
+        patch url, headers: auth_header(user), params: coupon_params
+        coupon.reload
+        expected_coupon = coupon.as_json(only: %i(id name code discount_value status max_user due_date))
+        expect(body_json['coupon']).to eq(expected_coupon)
+      end
+
+      it "returns success status" do
+        patch url, headers: auth_header(user), params: coupon_params
+        expect(response).to have_http_status(:ok) 
+      end
+    end
+    
+    context "with invalid params" do
+      let(:coupon_invalid_params) do
+        { coupon: attributes_for(:coupon, name: nil)}.to_json
+      end
+
+      it "does not update coupon" do
+        old_name = coupon.name
+        patch url, headers: auth_header(user), params: coupon_invalid_params
+        coupon.reload
+        expect(coupon.name).to eq(old_name)
+      end
+
+      it "returns error message" do
+        patch url, headers: auth_header(user), params: coupon_invalid_params
+        expect(body_json['errors']['fields']).to have_key('name')
+      end
+
+      it "returns unprocessable_entity status" do
+        patch url, headers: auth_header(user), params: coupon_invalid_params
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+    end
   end
 
   context "DELTE /coupons/:id" do

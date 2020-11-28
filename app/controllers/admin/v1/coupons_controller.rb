@@ -1,12 +1,18 @@
 module Admin::V1
   class CouponsController < ApiController
-  
+    before_action :load_coupon, only: %i(update)
+    
     def index
       @coupons = Coupon.all
     end
 
     def create
       @coupon = Coupon.new
+      @coupon.attributes = coupon_params
+      save_coupon!
+    end
+
+    def update
       @coupon.attributes = coupon_params
       save_coupon!
     end
@@ -23,6 +29,10 @@ module Admin::V1
       render :show
     rescue
       render_error(fields: @coupon.errors.messages)
+    end
+
+    def load_coupon
+      @coupon = Coupon.find(params[:id])
     end
   end
 end
