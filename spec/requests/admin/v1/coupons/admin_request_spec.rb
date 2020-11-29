@@ -116,9 +116,9 @@ RSpec.describe "Admin V1 Coupons as :admin", type: :request do
     end
   end
 
-  context "DELTE /coupons/:id" do
-    let(:url) { "/admin/v1/coupons/#{coupon.id}" }
+  context "DELETE /coupons/:id" do
     let!(:coupon) { create(:coupon) }
+    let(:url) { "/admin/v1/coupons/#{coupon.id}" }
 
     it "remove coupon" do
       expect do
@@ -131,7 +131,7 @@ RSpec.describe "Admin V1 Coupons as :admin", type: :request do
       expect(body_json).to_not be_present
     end
 
-    it "returns success satatus" do
+    it "returns success status" do
       delete url, headers: auth_header(user)
       expect(response).to have_http_status(:no_content)
     end
