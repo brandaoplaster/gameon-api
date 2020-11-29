@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe "Admin V1 Coupons as :client", type: :request do
-  let(:user) { create(:user, profile: :client) }
+  let(:user) { create(user, profile: :client) }
 
   context "GET /coupons" do
     let(:url) { "/admin/v1/coupons" }
