@@ -1,6 +1,6 @@
 module Admin::V1
   class SystemRequirementsController < ApiController
-    before_action :load_system_requirement, only: %i(update)
+    before_action :load_system_requirement, only: %i(update destroy)
 
     def index
       @system_requirements = SystemRequirement.all
@@ -15,6 +15,12 @@ module Admin::V1
     def update
       @system_requirement.attributes = system_requirement_params
       save_system_requirement!
+    end
+
+    def destroy
+      @system_requirement.destroy!
+    rescue
+      render_error(fields: @system_requirement.errors.messages)
     end
 
     private
