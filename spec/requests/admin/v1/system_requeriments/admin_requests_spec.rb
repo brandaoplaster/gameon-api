@@ -46,4 +46,55 @@ RSpec.describe "Admin V1: SystemRequirements as :admin", type: :request do
 
     end
   end
+
+  context "PATCH /system_requirements" do
+    let(:system_requirement) { create(:system_requirement) }
+    let(:url) { "/admin/v1/system_requirements/#{system_requirement.id}" }
+
+    context "with valid params" do
+      let(:new_system_requirement) { 'new_system_requirement' }
+      let(:system_requirement_params) { { system_requirement: { name: new_system_requirement } }.to_json }
+
+      it "update system requirement" do
+        patch url, headers: auth_header(user), params: system_requirement_params
+        system_requirement.reload
+        expect(system_requirement.name).to eq(new_system_requirement)
+      end
+
+      it "returns updated system requirement" do
+        patch url, headers: auth_header(user), params: system_requirement_params
+        system_requirement.reload
+        expected_system_requirement = system_requirement.as_json(only: %i(id name operational_system storage processor memory video_board))
+        expect(body_json['system_requirement']).to eq(expected_system_requirement)
+      end
+
+      it "returns success status" do
+        patch url, headers: auth_header(user), params: system_requirement_params
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    context "with invalid params" do
+      let(:system_requirement_invalid_params) do
+        { system_requirement: attributes_for(:system_requirement, name: nil) }.to_json
+      end
+       
+      it "does not update system requirement" do
+        old_name = system_requirement.name
+        patch url, headers: auth_header(user), params: system_requirement_invalid_params
+        system_requirement.reload
+        expect(system_requirement.name).to eq(old_name)
+      end
+
+      it "returns error message" do
+        patch url, headers: auth_header(user), params: system_requirement_invalid_params
+        expect(body_json['errors']['fields']).to have_key('name')
+      end
+
+      it "returns unprocessable entity status" do
+        patch url, headers: auth_header(user), params: system_requirement_invalid_params
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+    end
+  end
 end

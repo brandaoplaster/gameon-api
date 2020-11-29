@@ -1,12 +1,18 @@
 module Admin::V1
   class SystemRequirementsController < ApiController
-    
+    before_action :load_system_requirement, only: %i(update)
+
     def index
       @system_requirements = SystemRequirement.all
     end
 
     def create
       @system_requirement = SystemRequirement.new
+      @system_requirement.attributes = system_requirement_params
+      save_system_requirement!
+    end
+
+    def update
       @system_requirement.attributes = system_requirement_params
       save_system_requirement!
     end
@@ -23,6 +29,10 @@ module Admin::V1
       render :show
     rescue
       render_error(fields: @system_requirement.errors.messages)      
+    end
+
+    def load_system_requirement
+      @system_requirement = SystemRequirement.find(params[:id])
     end
   end
 end
