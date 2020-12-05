@@ -95,6 +95,22 @@ RSpec.describe "Admin V1 Products as :admin", type: :request do
     end
   end
 
+  context "GET /products/:id" do
+    let(:product) { create(:product) }
+    let(:url) { "/admin/v1/products/#{product.id}" }
+  
+    it 'returns requested product' do
+      get url, headers: auth_header(logged_in_user)
+      expected_product = build_game_product_json(product)
+      expect(body_json['product']).to eq(expected_product)
+    end
+
+    it 'returns success status' do
+      get url, headers: auth_header(logged_in_user)
+      expect(response).to have_http_status(:ok)
+    end
+  end
+
   context "POST /products" do
     let(:url) { "/admin/v1/products" }
     let(:categories) { create_list(:category, 2) }
