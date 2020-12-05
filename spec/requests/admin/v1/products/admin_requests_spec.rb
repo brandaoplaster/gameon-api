@@ -254,6 +254,138 @@ RSpec.describe "Admin V1 Products as :admin", type: :request do
       end
     end
   end
+
+  context "PATCH /products/:id" do
+    let(:old_categories) { create_list(:category, 2) }
+    let(:new_categories) { create_list(:category, 2) }
+    let(:product) { create(:product, categories: old_categories) }
+    let(:system_requirement) { create(:system_requirement) }
+    let(:url) { "/admin/v1/products/#{product.id}" }
+    let(:patch_header) { auth_header(logged_in_user, merge_with: { 'Content-Type' => 'multipart/form-data' }) }
+
+    context "with valid product params" do
+      let(:new_name) { 'New name' }
+      let(:product_params) do 
+        {
+          product: attributes_for(:product, name: new_name)
+          .merge(category_ids: new_categories.map(&:id)) 
+        }
+      end
+
+      it 'updates Product' do
+        patch url, headers: patch_header, params: product_params
+        product.reload
+        expect(product.name).to eq(new_name)
+      end
+
+      it 'updates to new categories' do
+        patch url, headers: patch_header, params: product_params
+        product.reload
+        expect(product.categories.ids).to contain_exactly(*new_categories.map(&:id))
+      end
+
+      it 'returns updated product' do
+        patch url, headers: patch_header, params: product_params
+        product.reload
+        expected_product = build_game_product_json(product)
+        expect(body_json['product']).to eq(expected_product)
+      end
+
+      it 'returns success status' do
+        patch url, headers: patch_header, params: product_params
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    context "with invalid product params" do
+      let(:product_invalid_params) do 
+        { 
+          product: attributes_for(:product, name: nil)
+          .merge(category_ids: new_categories.map(&:id)) 
+        }
+      end
+
+      it 'does not update product' do
+        old_name = product.name
+        patch url, headers: patch_header, params: product_invalid_params
+        product.reload
+        expect(product.name).to eq(old_name)
+      end
+
+      it 'keeps old categories' do
+        patch url, headers: patch_header, params: product_invalid_params
+        product.reload
+        expect(product.categories.ids).to contain_exactly(*old_categories.map(&:id))
+      end
+
+      it 'returns error message' do
+        patch url, headers: patch_header, params: product_invalid_params
+        expect(body_json['errors']['fields']).to have_key('name')
+      end
+
+      it 'returns unprocessable entity status' do
+        patch url, headers: patch_header, params: product_invalid_params
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+    end
+
+    context "with invalid productable params" do
+      let(:invalid_productable_params) do 
+        { product: attributes_for(:game, developer: "") }
+      end
+
+      it 'does not update productable' do
+        old_developer = product.productable.developer
+        patch url, headers: patch_header, params: invalid_productable_params
+        product.productable.reload
+        expect(product.productable.developer).to eq(old_developer)
+      end
+
+      it 'returns error message' do
+        patch url, headers: patch_header, params: invalid_productable_params
+        expect(body_json['errors']['fields']).to have_key('developer')
+      end
+
+      it 'returns unprocessable entity status' do
+        patch url, headers: patch_header, params: invalid_productable_params
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+    end
+
+    context "without productable params" do
+      let(:new_name) { 'New name' }
+      let(:product_without_productable_params) do
+        { 
+          product: attributes_for(:product, name: new_name)
+          .merge(category_ids: new_categories.map(&:id)) 
+        }
+      end
+
+      it 'updates Product' do
+        patch url, headers: patch_header, params: product_without_productable_params
+        product.reload
+        expect(product.name).to eq(new_name)
+      end
+
+      it 'updates to new categories' do
+        patch url, headers: patch_header, params: product_without_productable_params
+        product.reload
+        expect(product.categories.ids).to contain_exactly(*new_categories.map(&:id))
+      end
+
+      it 'returns updated product' do
+        patch url, headers: patch_header, params: product_without_productable_params
+        product.reload
+        expected_product = build_game_product_json(product)
+        expect(body_json['product']).to eq(expected_product)
+      end
+
+      it 'returns success status' do
+        patch url, headers: patch_header, params: product_without_productable_params
+        expect(response).to have_http_status(:ok)
+      end
+    end
+  end
 end
 
 def build_game_product_json(product)

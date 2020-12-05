@@ -1,5 +1,6 @@
 module Admin::V1
   class ProductsController < ApiController
+    before_action :load_product, only: %i(update)
   
     def index
       @products = load_products
@@ -11,7 +12,17 @@ module Admin::V1
       render_error(fields: @saving_service.errors)
     end
 
+    def update
+      run_service
+    rescue Admin::ProductSavingService::NotSavedProductError
+      render_error(fields: @saving_service.errors)
+    end
+
     private
+
+    def load_product
+      @product = Product.find(params[:id])      
+    end
 
     def load_products
       permitted = params.permit({ search: :name}, { order: {} }, :page, :length)
