@@ -9,12 +9,12 @@ RSpec.describe "Admin V1 Products as :admin", type: :request do
     let!(:products) { create_list(:product, 10, categories: categories) }
 
     context "without any params" do
-      it "returns 10 records" do
+      it 'returns 10 records' do
         get url, headers: auth_header(logged_in_user)
         expect(body_json['products'].count).to eq 10
       end
       
-      it "returns Products with :productable following default pagination" do
+      it 'returns Products with :productable following default pagination' do
         get url, headers: auth_header(logged_in_user)
         expected_return = products[0..9].map do |product| 
           build_game_product_json(product)
@@ -22,9 +22,13 @@ RSpec.describe "Admin V1 Products as :admin", type: :request do
         expect(body_json['products']).to contain_exactly *expected_return
       end
 
-      it "returns success status" do
+      it 'returns success status' do
         get url, headers: auth_header(logged_in_user)
         expect(response).to have_http_status(:ok)
+      end
+
+      it_behaves_like 'pagination meta attributes', { page: 1, length: 10, total: 10, total_pages: 1 } do
+        before { get url, headers: auth_header(logged_in_user) }
       end
     end
 
@@ -37,7 +41,7 @@ RSpec.describe "Admin V1 Products as :admin", type: :request do
 
       let(:search_params) { { search: { name: "Search" } } }
 
-      it "returns only seached products limited by default pagination" do
+      it 'returns only seached products limited by default pagination' do
         get url, headers: auth_header(logged_in_user), params: search_params
         expected_return = search_name_products[0..9].map do |product|
           build_game_product_json(product)
@@ -45,9 +49,13 @@ RSpec.describe "Admin V1 Products as :admin", type: :request do
         expect(body_json['products']).to contain_exactly *expected_return
       end
 
-      it "returns success status" do
+      it 'returns success status' do
         get url, headers: auth_header(logged_in_user), params: search_params
         expect(response).to have_http_status(:ok)
+      end
+
+      it_behaves_like 'pagination meta attributes', { page: 1, length: 10, total: 15, total_pages: 2 } do
+        before { get url, headers: auth_header(logged_in_user), params: search_params }
       end
     end
 
@@ -57,12 +65,12 @@ RSpec.describe "Admin V1 Products as :admin", type: :request do
 
       let(:pagination_params) { { page: page, length: length } }
 
-      it "returns records sized by :length" do
+      it 'returns records sized by :length' do
         get url, headers: auth_header(logged_in_user), params: pagination_params
         expect(body_json['products'].count).to eq length
       end
       
-      it "returns products limited by pagination" do
+      it 'returns products limited by pagination' do
         get url, headers: auth_header(logged_in_user), params: pagination_params
         expected_return = products[5..9].map do |product|
           build_game_product_json(product)
@@ -70,16 +78,20 @@ RSpec.describe "Admin V1 Products as :admin", type: :request do
         expect(body_json['products']).to contain_exactly *expected_return
       end
 
-      it "returns success status" do
+      it 'returns success status' do
         get url, headers: auth_header(logged_in_user), params: pagination_params
         expect(response).to have_http_status(:ok)
+      end
+
+      it_behaves_like 'pagination meta attributes', { page: 2, length: 5, total: 10, total_pages: 2 } do
+        before { get url, headers: auth_header(logged_in_user), params: pagination_params }
       end
     end
 
     context "with order params" do
       let(:order_params) { { order: { name: 'desc' } } }
 
-      it "returns ordered products limited by default pagination" do
+      it 'returns ordered products limited by default pagination' do
         get url, headers: auth_header(logged_in_user), params: order_params
         products.sort! { |a, b| b[:name] <=> a[:name] }
         expected_return = products[0..9].map do |product|
@@ -88,9 +100,13 @@ RSpec.describe "Admin V1 Products as :admin", type: :request do
         expect(body_json['products']).to contain_exactly *expected_return
       end
  
-      it "returns success status" do
+      it 'returns success status' do
         get url, headers: auth_header(logged_in_user), params: order_params
         expect(response).to have_http_status(:ok)
+      end
+
+      it_behaves_like 'pagination meta attributes', { page: 1, length: 10, total: 10, total_pages: 1 } do
+        before { get url, headers: auth_header(logged_in_user), params: order_params }
       end
     end
   end
@@ -128,30 +144,30 @@ RSpec.describe "Admin V1 Products as :admin", type: :request do
         }
       end
 
-      it "adds a new product" do
+      it 'adds a new product' do
         expect do
           post url, headers: post_header, params: product_params
         end.to change(Product, :count).by(1)
       end
 
-      it "adds a new productable" do
+      it 'adds a new productable' do
         expect do
           post url, headers: post_header, params: product_params
         end.to change(Game, :count).by(1)
       end
 
-      it "associates categories to product" do
+      it 'associates categories to product' do
         post url, headers: post_header, params: product_params
         expect(Product.last.categories.ids).to contain_exactly(*categories.map(&:id))
       end
 
-      it "returns last added product" do
+      it 'returns last added product' do
         post url, headers: post_header, params: product_params
         expected_product = build_game_product_json(Product.last)
         expect(body_json['product']).to eq(expected_product)
       end
 
-      it "returns success status :ok" do
+      it 'returns success status :ok' do
         post url, headers: post_header, params: product_params
         expect(response).to have_http_status(:ok)
       end
@@ -168,30 +184,30 @@ RSpec.describe "Admin V1 Products as :admin", type: :request do
         }
       end
 
-      it "does not add a new product" do
+      it 'does not add a new product' do
         expect do
           post url, headers: post_header, params: product_invalid_params
         end.to_not change(Product, :count)
       end
 
-      it "does not add a new productable" do
+      it 'does not add a new productable' do
         expect do
           post url, headers: post_header, params: product_invalid_params
         end.to_not change(Game, :count)
       end
 
-      it "does not create productCategory" do
+      it 'does not create productCategory' do
         expect do
           post url, headers: post_header, params: product_invalid_params
         end.to_not change(ProductCategory, :count)
       end
 
-      it "returns error message" do
+      it 'returns error message' do
         post url, headers: post_header, params: product_invalid_params
         expect(body_json['errors']['fields']).to have_key('name')
       end
 
-      it "returns unprocessable entity status" do
+      it 'returns unprocessable entity status' do
         post url, headers: post_header, params: product_invalid_params
         expect(response).to have_http_status(:unprocessable_entity)
       end
@@ -207,30 +223,30 @@ RSpec.describe "Admin V1 Products as :admin", type: :request do
         }
       end
 
-      it "does not add a new Product" do
+      it 'does not add a new Product' do
         expect do
           post url, headers: post_header, params: invalid_productable_params
         end.to_not change(Product, :count)
       end
 
-      it "does not add a new productable" do
+      it 'does not add a new productable' do
         expect do
           post url, headers: post_header, params: invalid_productable_params
         end.to_not change(Game, :count)
       end
 
-      it "does not create ProductCategory" do
+      it 'does not create ProductCategory' do
         expect do
           post url, headers: post_header, params: invalid_productable_params
         end.to_not change(ProductCategory, :count)
       end
 
-      it "returns error message" do
+      it 'returns error message' do
         post url, headers: post_header, params: invalid_productable_params
         expect(body_json['errors']['fields']).to have_key('developer')
       end
 
-      it "returns unprocessable entity status" do
+      it 'returns unprocessable entity status' do
         post url, headers: post_header, params: invalid_productable_params
         expect(response).to have_http_status(:unprocessable_entity)
       end
@@ -241,30 +257,30 @@ RSpec.describe "Admin V1 Products as :admin", type: :request do
         { product: attributes_for(:product).merge(category_ids: categories.map(&:id)) }
       end
 
-      it "does not add a new product" do
+      it 'does not add a new product' do
         expect do
           post url, headers: post_header, params: product_without_productable_params
         end.to_not change(Product, :count)
       end
 
-      it "does not add a new productable" do
+      it 'does not add a new productable' do
         expect do
           post url, headers: post_header, params: product_without_productable_params
         end.to_not change(Game, :count)
       end
 
-      it "does not create ProductCategory" do
+      it 'does not create ProductCategory' do
         expect do
           post url, headers: post_header, params: product_without_productable_params
         end.to_not change(ProductCategory, :count)
       end
 
-      it "returns error message" do
+      it 'returns error message' do
         post url, headers: post_header, params: product_without_productable_params
         expect(body_json['errors']['fields']).to have_key('productable')
       end
 
-      it "returns unprocessable_entity status" do
+      it 'returns unprocessable_entity status' do
         post url, headers: post_header, params: product_without_productable_params
         expect(response).to have_http_status(:unprocessable_entity)
       end
