@@ -1,6 +1,6 @@
 # Game On API :video_game:
 
-> An e-commerce for online game sales
+An e-commerce for online game sales
 
 ## About the Game On project
 Features present in this e-commerce:
@@ -13,6 +13,50 @@ Features present in this e-commerce:
  - Search by filters
  - List of products
  - Payment integration
+
+
+## Configuration database and Installing dependencies
+
+- Apply database configuration in the **database.yml** file
+
+```
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host: localhost
+  user: username
+  password: password
+```
+
+### next steps
+
+- 
+```
+bundle install
+```
+- 
+```
+rails db:create
+```
+- 
+```
+rails db:migrate
+```
+- 
+```
+bundle exec rspec
+```
+- 
+```
+rails s
+```
+
+### Docker
+> Option to use in development using docker.
+****
+> Needs fixing problem with active storage
+
 
 ## Stack
  - Ruby 2.7.1
