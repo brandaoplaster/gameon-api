@@ -12,4 +12,6 @@ RSpec.describe License, type: :model do
   it { is_expected.to validate_uniqueness_of(:key).case_insensitive.scoped_to(:platform) }
 
   it { is_expected.to belong_to :game }
+
+  it_behaves_like "paginatable concern", :license
 end
