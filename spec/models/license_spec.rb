@@ -14,4 +14,5 @@ RSpec.describe License, type: :model do
   it { is_expected.to belong_to :game }
 
   it_behaves_like "paginatable concern", :license
+  it_behaves_like "like searchable concern", :license, :key
 end
