@@ -2,10 +2,11 @@ require 'rails_helper'
 
 RSpec.describe "Admin V1 Licenses as :admin", type: :request do
   let(:logged_in_user) { create(:user) }
+  let(:game) { create(:game) }
 
-  context "GET /licenses" do
-    let(:url) { "/admin/v1/licenses" }
-    let!(:licenses) { create_list(:license, 10) }
+  context "GET /games/:game_id/licenses" do
+    let(:url) { "/admin/v1/game/#{game.id}/licenses" }
+    let!(:licenses) { create_list(:license, 10, game: game) }
 
     context "without any params" do
       it 'returns 10 Licenses' do
