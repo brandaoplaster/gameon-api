@@ -26,7 +26,7 @@ RSpec.describe "Admin V1 Licenses as :admin", type: :request do
       end
     end
 
-    context "pagination params " do
+    context "with pagination params" do
       let(:page) { 2 }
       let(:length) { 5 }
       let(:pagination_params) { { page: page, length: length } }
@@ -44,6 +44,22 @@ RSpec.describe "Admin V1 Licenses as :admin", type: :request do
 
       it "returns success status" do
         get url, headers: auth_header(logged_in_user), params: pagination_params
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    context 'with order params' do
+      let(:order_params) { { order: { key: 'desc' } } }
+
+      it 'returns ordered licenses limited by default pagination' do
+        get url, headers: auth_header(user), params: order_params
+        licenses.sort! { |a.b| b[:key] <=> a[:key] }
+        expected_licenses[0..9].as_json(only: %i(id key platform status game_id))
+        expect(body_json['licenses']).to contain_exactly *expected_licenses
+      end
+
+      it 'returns success status' do
+        get url, headers: auth_header(user), params: order_params
         expect(response).to have_http_status(:ok)
       end
     end
